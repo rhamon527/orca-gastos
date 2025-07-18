@@ -264,3 +264,20 @@ def delete_user(user_id):
 
 if __name__ == '__main__':
     socketio.run(app, host='0.0.0.0', port=5000, debug=True)
+@app.route("/usuarios", methods=["GET", "POST"])
+def usuarios():
+    obras = Obra.query.all()
+    if request.method == "POST":
+        nome = request.form["nome"]
+        email = request.form["email"]
+        senha = request.form["senha"]
+        tipo = request.form["tipo"]
+        obra_ids = request.form.getlist("obras")
+        obras_permitidas = Obra.query.filter(Obra.id.in_(obra_ids)).all()
+
+        novo_user = Usuario(nome=nome, email=email, senha=senha, tipo=tipo, obras=obras_permitidas)
+        db.session.add(novo_user)
+        db.session.commit()
+        return redirect("/usuarios")
+    usuarios = Usuario.query.all()
+    return render_template("users.html", users=usuarios, obras=obras)
