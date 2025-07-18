@@ -3,6 +3,12 @@ from flask_login import UserMixin
 
 db = SQLAlchemy()
 
+# Associação entre usuários e obras (relacionamento muitos-para-muitos)
+user_obras = db.Table('user_obras',
+    db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True),
+    db.Column('obra_id', db.Integer, db.ForeignKey('obra.id'), primary_key=True)
+)
+
 class User(db.Model, UserMixin):
     active = db.Column(db.Boolean, default=True)
 
@@ -15,6 +21,9 @@ class User(db.Model, UserMixin):
     email = db.Column(db.String(120), unique=True, nullable=False)
     senha = db.Column(db.String(128), nullable=False)
     tipo = db.Column(db.String(20), nullable=False)  # 'visualizador' ou 'editor'
+
+    # Obras que o usuário pode acessar
+    obras = db.relationship('Obra', secondary=user_obras, backref='usuarios')
 
 class Obra(db.Model):
     id = db.Column(db.Integer, primary_key=True)
