@@ -9,13 +9,21 @@
       <option value="visualizador">Visualizador</option>
       <option value="editor">Editor</option>
     </select>
+
+    <label>Obras que o usuário pode acessar:</label><br>
+    {% for obra in obras %}
+      <label>
+        <input type="checkbox" name="obras" value="{{ obra.id }}"> {{ obra.nome }}
+      </label><br>
+    {% endfor %}
+
     <button type="submit">Criar Usuário</button>
   </form>
+
   <h2>Lista de Usuários</h2>
   <table>
     <tr><th>ID</th><th>Nome</th><th>E-mail</th><th>Tipo</th><th>Status</th><th>Ações</th></tr>
     {% for user in users %}
-    <tr>
     <tr>
       <td>{{ user.id }}</td>
       <td>{{ user.nome }}</td>
