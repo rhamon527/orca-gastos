@@ -1,39 +1,44 @@
 {% extends 'base.html' %}
 {% block content %}
-  <h1>Gráficos por Categoria</h1>
+<h1>Gráficos por Categoria</h1>
 
-  <form method="get" style="margin-bottom: 20px;">
-    <label for="obra">Filtrar por Obra:</label>
-    <select name="obra_id" onchange="this.form.submit()">
-      <option value="">Todas as Obras</option>
-      {% for obra in obras %}
-        <option value="{{ obra.id }}" {% if obra.id == obra_id %}selected{% endif %}>
-          {{ obra.nome }}
-        </option>
-      {% endfor %}
-    </select>
-  </form>
+<label for="obraSelect">Filtrar por Obra:</label>
+<select id="obraSelect">
+  <option value="">Todas as Obras</option>
+  {% for obra in obras %}
+    <option value="{{ obra.id }}" {% if request.args.get('obra_id', type=int) == obra.id %}selected{% endif %}>{{ obra.nome }}</option>
+  {% endfor %}
+</select>
 
-  <div class="chart-container">
-    <canvas id="chart"></canvas>
-  </div>
+<div class="chart-container" style="height: 400px; margin-top: 20px;">
+  <canvas id="chart"></canvas>
+</div>
 
-  <script>
-    fetch('{{ url_for("api_gastos_tipos", obra_id=obra_id) }}')
+<script>
+  const ctx = document.getElementById('chart').getContext('2d');
+  let chart;
+
+  function carregarGrafico(obraId = '') {
+    fetch(`/api/gastos_tipos${obraId ? '?obra_id=' + obraId : ''}`)
       .then(res => res.json())
       .then(json => {
-        const ctx = document.getElementById('chart').getContext('2d');
-        if (!json.data || json.data.length === 0 || json.data.every(v => v === 0)) {
+        if (chart) chart.destroy();
+
+        if (!json.data || json.data.every(v => v === 0)) {
           document.getElementById('chart').replaceWith(document.createTextNode('Sem dados para exibir.'));
           return;
         }
-        new Chart(ctx, {
+
+        chart = new Chart(ctx, {
           type: 'bar',
           data: {
             labels: json.labels,
             datasets: [{
               label: 'Total por Categoria',
-              data: json.data
+              data: json.data,
+              backgroundColor: 'rgba(54, 162, 235, 0.5)',
+              borderColor: 'rgba(54, 162, 235, 1)',
+              borderWidth: 1
             }]
           },
           options: {
@@ -46,10 +51,23 @@
             },
             scales: {
               x: { ticks: { font: { size: 14, family: 'Arial' } } },
-              y: { ticks: { font: { size: 14, family: 'Arial' } } }
+              y: { ticks: { font: { size: 14, family: 'Arial' } }, beginAtZero: true }
             }
-         }
+          }
         });
       });
-  </script>
+  }
+
+  // Carrega gráfico inicial (obra selecionada via URL)
+  const obraInicial = new URLSearchParams(window.location.search).get("obra_id");
+  carregarGrafico(obraInicial);
+
+  // Filtro de obra onchange
+  document.getElementById('obraSelect').addEventListener('change', function () {
+    const obraId = this.value;
+    const url = obraId ? `?obra_id=${obraId}` : '';
+    history.pushState(null, '', `/graficos${url}`);
+    carregarGrafico(obraId);
+  });
+</script>
 {% endblock %}
