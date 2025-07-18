@@ -1,11 +1,25 @@
 {% extends 'base.html' %}
 {% block content %}
   <h1>Gráficos por Categoria</h1>
+
+  <form method="get" style="margin-bottom: 20px;">
+    <label for="obra">Filtrar por Obra:</label>
+    <select name="obra_id" onchange="this.form.submit()">
+      <option value="">Todas as Obras</option>
+      {% for obra in obras %}
+        <option value="{{ obra.id }}" {% if obra.id == obra_id %}selected{% endif %}>
+          {{ obra.nome }}
+        </option>
+      {% endfor %}
+    </select>
+  </form>
+
   <div class="chart-container">
-  <canvas id="chart"></canvas>
-</div>
+    <canvas id="chart"></canvas>
+  </div>
+
   <script>
-    fetch('{{ url_for("api_gastos_tipos") }}')
+    fetch('{{ url_for("api_gastos_tipos", obra_id=obra_id) }}')
       .then(res => res.json())
       .then(json => {
         const ctx = document.getElementById('chart').getContext('2d');
