@@ -45,3 +45,18 @@ class UserObra(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     obra_id = db.Column(db.Integer, db.ForeignKey('obra.id'), nullable=False)
+# models.py
+
+class Usuario(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    nome = db.Column(db.String(100))
+    email = db.Column(db.String(100), unique=True)
+    senha = db.Column(db.String(100))
+    tipo = db.Column(db.String(20))  # visualizador, editor, admin
+    obras = db.relationship('Obra', secondary='usuario_obra', backref='usuarios')
+
+# Tabela de associação entre usuários e obras
+usuario_obra = db.Table('usuario_obra',
+    db.Column('usuario_id', db.Integer, db.ForeignKey('usuario.id')),
+    db.Column('obra_id', db.Integer, db.ForeignKey('obra.id'))
+)
